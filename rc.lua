@@ -14,7 +14,7 @@ local hotkeys_popup = require("awful.hotkeys_popup").widget
 -- Load Debian menu entries
 require("debian.menu")
 
--- {{{ Error handling
+--{{{---| Error handling |---------------------------------------------------------------------------
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
 if awesome.startup_errors then
@@ -39,10 +39,11 @@ do
 end
 -- }}}
 
--- {{{ Variable definitions
+-- {{{---| Variable definitions |---------------------------------------------------------------------------
 -- Themes define colours, icons, font and wallpapers.
 --beautiful.init(awful.util.get_themes_dir() .. "default/theme.lua")
 beautiful.init("/home/paul/.config/awesome/theme/theme.lua")
+local theme = require("theme/theme")
 
 -- This is used later as the default terminal and editor to run.
 terminal = "gnome-terminal"
@@ -77,7 +78,7 @@ awful.layout.layouts = {
 }
 -- }}}
 
--- {{{ Helper functions
+-- {{{---| Helper functions |---------------------------------------------------------------------------
 local function client_menu_toggle_fn()
     local instance = nil
 
@@ -92,7 +93,7 @@ local function client_menu_toggle_fn()
 end
 -- }}}
 
--- {{{ Menu
+-- {{{---| Menu |---------------------------------------------------------------------------
 -- Create a launcher widget and a main menu
 myawesomemenu = {
    { "hotkeys", function() return false, hotkeys_popup.show_help end},
@@ -118,9 +119,38 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- Keyboard map indicator and switcher
 mykeyboardlayout = awful.widget.keyboardlayout()
 
--- {{{ Wibar
+-- {{{---| Wibar |---------------------------------------------------------------------------
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock()
+
+-- {{--| Battery bar |-----------------------------
+mybatterybar = awful.widget.progressbar()
+mybatterybar:set_border_color(theme.fg_normal)
+mybatterybar:set_background_color(theme.bg_normal)
+mybatterybar:set_color(theme.bg_focus)
+mybatterybar:set_width(50)
+
+mytimer = timer({ timeout = 30 })
+mytimer:connect_signal("timeout", function()
+                                      f = io.popen('acpi -b', r)
+                                      state, percent = string.match(f:read(), 'Battery %d: (%w+), (%d+)%%')
+                                      f:close()
+                                      percent = tonumber(percent)/100
+                                      if state == 'Discharging' then
+                                        mybatterybar:set_color('#CCCC00')
+                                        if percent < 0.2 then
+                                          mybatterybar:set_color(theme.bg_urgent)
+                                        end
+                                      elseif state == 'Charging' then
+                                        mybatterybar:set_color('#66CC00')
+                                      else
+                                        mybatterybar:set_color(theme.bg_focus)
+                                      end
+                                      mybatterybar:set_value(percent)
+                                  end)
+mytimer:start()
+mytimer:emit_signal("timeout")
+-- }}
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = awful.util.table.join(
@@ -221,13 +251,14 @@ awful.screen.connect_for_each_screen(function(s)
             mykeyboardlayout,
             wibox.widget.systray(),
             mytextclock,
+						mybatterybar,
             s.mylayoutbox,
         },
     }
 end)
 -- }}}
 
--- {{{ Mouse bindings
+-- {{{---| Mouse bindings |---------------------------------------------------------------------------
 root.buttons(awful.util.table.join(
     awful.button({ }, 3, function () mymainmenu:toggle() end),
     awful.button({ }, 4, awful.tag.viewnext),
@@ -235,7 +266,7 @@ root.buttons(awful.util.table.join(
 ))
 -- }}}
 
--- {{{ Key bindings
+-- {{{---| Key bindings |---------------------------------------------------------------------------
 globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "s",      hotkeys_popup.show_help,
               {description="show help", group="awesome"}),
@@ -427,7 +458,7 @@ clientbuttons = awful.util.table.join(
 root.keys(globalkeys)
 -- }}}
 
--- {{{ Rules
+-- {{{---| Rules |---------------------------------------------------------------------------
 -- Rules to apply to new clients (through the "manage" signal).
 awful.rules.rules = {
     -- All clients will match this rule.
@@ -480,7 +511,7 @@ awful.rules.rules = {
 }
 -- }}}
 
--- {{{ Signals
+-- {{{---| Signals |---------------------------------------------------------------------------
 -- Signal function to execute when a new client appears.
 client.connect_signal("manage", function (c)
     -- Set the windows at the slave,
