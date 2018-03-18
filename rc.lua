@@ -120,36 +120,51 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 mykeyboardlayout = awful.widget.keyboardlayout()
 
 -- {{{---| Wibar |---------------------------------------------------------------------------
--- Create a textclock widget
-mytextclock = wibox.widget.textclock()
 
--- {{--| Battery bar |-----------------------------
-mybatterybar = awful.widget.progressbar()
-mybatterybar:set_border_color(theme.fg_normal)
-mybatterybar:set_background_color(theme.bg_normal)
-mybatterybar:set_color(theme.bg_focus)
-mybatterybar:set_width(50)
+-- {{--| Textclock |-----------------------------
+mytextclock = awful.widget.textclock(" <span color='#01cace'>%H:%M</span> <span color='#01cace'>%a, %d/%m/%y</span> ", 10)
+-- #50EBEC #00AFAF
+-- }}
+
+-- {{--| stuff to try next |---------------------
+-- mytextclock:connect_signal("button::press",
+-- 						   function ()
+-- 								 os.execute("firefox")
+-- 							  -- naughty.notify({ title = "Calendar",
+-- 								-- 			   timeout = 10,
+-- 								-- 			   text  = "\n" .. awful.util.pread("cal") })
+-- end)
+-- }}
+
+-- {{--| Battery bar |---------------------------
+mybatterybar = wibox.widget.textbox()
 
 mytimer = timer({ timeout = 30 })
 mytimer:connect_signal("timeout", function()
                                       f = io.popen('acpi -b', r)
-                                      state, percent = string.match(f:read(), 'Battery %d: (%w+), (%d+)%%')
+																			if not (type(f:read()) == 'string' or f:read() == nil) then
+                                      	state, percent = string.match(f:read(), 'Battery %d: (%w+), (%d+)%%')
+																				percent = tonumber(percent)/100
+																			end
                                       f:close()
-                                      percent = tonumber(percent)/100
                                       if state == 'Discharging' then
-                                        mybatterybar:set_color('#CCCC00')
+																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>".. tostring(percent).."% </span>")
                                         if percent < 0.2 then
-                                          mybatterybar:set_color(theme.bg_urgent)
+																					mybatterybar:set_markup_silently("<span foreground='"..theme.bg_urgent.."'>".. tostring(percent).."% </span>")
                                         end
                                       elseif state == 'Charging' then
-                                        mybatterybar:set_color('#66CC00')
+																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>".. tostring(percent).."% </span>")
                                       else
-                                        mybatterybar:set_color(theme.bg_focus)
+																				mybatterybar:set_markup_silently("<span foreground='#01cace'>plug</span>")
                                       end
-                                      mybatterybar:set_value(percent)
                                   end)
 mytimer:start()
 mytimer:emit_signal("timeout")
+-- }}
+
+-- {{--| Wlan |-----------------------------
+--awful.util.spawn("nm-applet &")
+os.execute("nm-applet &")
 -- }}
 
 -- Create a wibox for each screen and add it
@@ -502,7 +517,7 @@ awful.rules.rules = {
 
     -- Add titlebars to normal clients and dialogs
     { rule_any = {type = { "normal", "dialog" }
-      }, properties = { titlebars_enabled = true }
+	}, properties = { titlebars_enabled = false }
     },
 
     -- Set Firefox to always map on the tag named "2" on screen 1.
