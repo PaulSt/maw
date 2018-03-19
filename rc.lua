@@ -142,11 +142,13 @@ mybatterybar = wibox.widget.textbox()
 mytimer = timer({ timeout = 30 })
 mytimer:connect_signal("timeout", function()
                                       f = io.popen('acpi -b', r)
-																			if not (type(f:read()) == 'string' or f:read() == nil) then
-                                      	state, percent = string.match(f:read(), 'Battery %d: (%w+), (%d+)%%')
-																				percent = tonumber(percent)/100
+																			acpiout = f:read()
+                                    	f:close()
+																			if (type(acpiout) == 'string') then
+                                      	state, percent = string.match(acpiout, 'Battery %d: (%w+), (%d+)%%')
+																				percent = tonumber(percent)--/100
 																			end
-                                      f:close()
+
                                       if state == 'Discharging' then
 																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>".. tostring(percent).."% </span>")
                                         if percent < 0.2 then
@@ -155,7 +157,7 @@ mytimer:connect_signal("timeout", function()
                                       elseif state == 'Charging' then
 																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>".. tostring(percent).."% </span>")
                                       else
-																				mybatterybar:set_markup_silently("<span foreground='#01cace'>plug</span>")
+																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>plug</span>")
                                       end
                                   end)
 mytimer:start()
