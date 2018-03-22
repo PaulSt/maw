@@ -381,7 +381,11 @@ globalkeys = awful.util.table.join(
               {description = "lua execute prompt", group = "awesome"}),
     -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end,
-              {description = "show the menubar", group = "launcher"})
+              {description = "show the menubar", group = "launcher"}),
+		--sound
+		awful.key({}, "XF86AudioLowerVolume", function () awful.spawn("amixer -D pulse sset Master 5%-") end, {description = "increase volume", group = "custom"}),
+		awful.key({}, "XF86AudioRaiseVolume", function () awful.spawn("amixer -D pulse sset Master 5%+") end, {description = "decrease volume", group = "custom"}),
+		awful.key({}, "XF86AudioMute", function () awful.spawn("amixer -D pulse set Master +1 toggle") end, {description = "mute volume", group = "custom"})
 )
 
 clientkeys = awful.util.table.join(
