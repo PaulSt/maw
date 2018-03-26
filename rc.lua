@@ -42,7 +42,7 @@ end
 -- {{{---| Variable definitions |---------------------------------------------------------------------------
 -- Themes define colours, icons, font and wallpapers.
 --beautiful.init(awful.util.get_themes_dir() .. "default/theme.lua")
-beautiful.init("/home/paul/.config/awesome/theme/theme.lua")
+beautiful.init("~/.config/awesome/theme/theme.lua")
 local theme = require("theme/theme")
 
 -- This is used later as the default terminal and editor to run.
