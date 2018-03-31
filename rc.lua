@@ -43,7 +43,7 @@ end
 -- Themes define colours, icons, font and wallpapers.
 --beautiful.init(awful.util.get_themes_dir() .. "default/theme.lua")
 beautiful.init("~/.config/awesome/theme/theme.lua")
-local theme = require("theme/theme")
+--local theme = require("theme/theme")
 
 -- This is used later as the default terminal and editor to run.
 terminal = "gnome-terminal"
@@ -138,6 +138,10 @@ mytextclock = awful.widget.textclock(" <span color='#01cace'>%H:%M</span> <span 
 
 -- {{--| Battery bar |---------------------------
 mybatterybar = wibox.widget.textbox()
+mybatterybaricon = wibox.widget {
+    resize = true,
+    widget = wibox.widget.imagebox
+}
 
 mytimer = timer({ timeout = 30 })
 mytimer:connect_signal("timeout", function()
@@ -150,14 +154,17 @@ mytimer:connect_signal("timeout", function()
 																			end
 
                                       if state == 'Discharging' then
+																				mybatterybaricon.image = beautiful.icons_battery
 																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>".. tostring(percent).."% </span>")
                                         if percent < 0.2 then
-																					mybatterybar:set_markup_silently("<span foreground='"..theme.bg_urgent.."'>".. tostring(percent).."% </span>")
+																					mybatterybar:set_markup_silently("<span foreground='"..beautiful.bg_urgent.."'>".. tostring(percent).."% </span>")
                                         end
-                                      elseif state == 'Charging' then
+                                      elseif state == 'Charging' or state == 'Full' then
+																				mybatterybaricon.image = beautiful.icons_plug
 																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>".. tostring(percent).."% </span>")
                                       else
-																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'>plug</span>")
+																				mybatterybaricon.image = beautiful.icons_plug
+																				mybatterybar:set_markup_silently("<span foreground='#CCCC00'></span>")
                                       end
                                   end)
 mytimer:start()
@@ -262,12 +269,15 @@ awful.screen.connect_for_each_screen(function(s)
             s.mytaglist,
             s.mypromptbox,
         },
-        s.mytasklist, -- Middle widget
+         -- Middle widget
+					s.mytasklist
+				,
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
             mykeyboardlayout,
             wibox.widget.systray(),
             mytextclock,
+						mybatterybaricon,
 						mybatterybar,
             s.mylayoutbox,
         },
