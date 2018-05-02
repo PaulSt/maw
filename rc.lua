@@ -191,17 +191,20 @@ os.execute("nm-applet &")
 -- }}
 
 -- {{--| GitAPI |---------------------------
+gituser = nil ---insert git user here
 mygiticon = wibox.widget {
   resize = true,
   widget = wibox.widget.imagebox
 }
 mygiticon.image = beautiful.icons_git
 
-if pcall(function() require("cURL") require("JSON") end) then
+if (pcall(function() require("cURL") require("JSON") end) and gituser~=nil) then
   local cURL = require("cURL")
-    c = cURL.easy{
-    url        = "https://api.github.com/users/PaulSt/events",
-    httpheader = { "User-Agent: PaulSt";};
+  local json = require("JSON")
+  c = cURL.easy
+  {
+    url        = "https://api.github.com/users/" .. gituser .. "/events",
+    httpheader = { "User-Agent: "..gituser;};
     writefunction = io.stderr
   }
   t={}
@@ -209,7 +212,6 @@ if pcall(function() require("cURL") require("JSON") end) then
   c:perform()
   c:close()
   gitevents = table.concat(t)
-  local json = require("JSON")
   gitevents = json:decode(gitevents)
 
   awful.tooltip({
@@ -219,6 +221,10 @@ if pcall(function() require("cURL") require("JSON") end) then
         return eventout
       end
   })
+elseif gituser==nil then
+  naughty.notify({ preset = naughty.config.presets.critical,
+                   title = "curl require",
+                   text = "please set gituser" })
 else
   naughty.notify({ preset = naughty.config.presets.critical,
                    title = "curl require",
