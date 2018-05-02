@@ -106,7 +106,7 @@ theme.icon_theme = nil
 -- icons
 theme.icons_battery = "~/.config/awesome/theme/icons/battery.png"
 theme.icons_plug = "~/.config/awesome/theme/icons/plug.png"
-
+theme.icons_git = "~/.config/awesome/theme/icons/github.png" 
 
 return theme
 

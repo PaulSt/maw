@@ -190,6 +190,42 @@ awful.tooltip({
 os.execute("nm-applet &")
 -- }}
 
+-- {{--| GitAPI |---------------------------
+mygiticon = wibox.widget {
+  resize = true,
+  widget = wibox.widget.imagebox
+}
+mygiticon.image = beautiful.icons_git
+
+if pcall(function() require("cURL") require("JSON") end) then
+  local cURL = require("cURL")
+    c = cURL.easy{
+    url        = "https://api.github.com/users/PaulSt/events",
+    httpheader = { "User-Agent: PaulSt";};
+    writefunction = io.stderr
+  }
+  t={}
+  c:setopt_writefunction(table.insert, t)
+  c:perform()
+  c:close()
+  gitevents = table.concat(t)
+  local json = require("JSON")
+  gitevents = json:decode(gitevents)
+
+  awful.tooltip({
+      objects = { mygiticon },
+      timer_function = function()
+        eventout = gitevents[1]["type"] .. "\n" .. gitevents[1]["actor"]["login"]
+        return eventout
+      end
+  })
+else
+  naughty.notify({ preset = naughty.config.presets.critical,
+                   title = "curl require",
+                   text = "could not find curl or json lua package" })
+end
+-- }}
+
 -- Create a wibox for each screen and add it
 local taglist_buttons = awful.util.table.join(
                     awful.button({ }, 1, function(t) t:view_only() end),
@@ -290,6 +326,7 @@ awful.screen.connect_for_each_screen(function(s)
             layout = wibox.layout.fixed.horizontal,
             mykeyboardlayout,
             wibox.widget.systray(),
+            mygiticon,
             mytextclock,
 						mybatterybaricon,
 						mybatterybar,
