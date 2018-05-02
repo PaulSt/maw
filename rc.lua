@@ -169,6 +169,20 @@ mytimer:connect_signal("timeout", function()
                                   end)
 mytimer:start()
 mytimer:emit_signal("timeout")
+
+awful.tooltip({
+    objects = { mybatterybar },
+    timer_function = function()
+      f = io.popen('acpi -b', r)
+      acpiout = f:read()
+      f:close()
+      if (type(acpiout) == 'string') then
+        text = string.match(acpiout, '%d%d:%d%d:%d%d.-$')
+      end
+      if (type(text)~='string') then return "Charged" end
+      return text
+    end
+})
 -- }}
 
 -- {{--| Wlan |-----------------------------
