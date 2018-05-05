@@ -217,7 +217,9 @@ if (pcall(function() require("cURL") require("JSON") end) and gituser~=nil) then
   awful.tooltip({
       objects = { mygiticon },
       timer_function = function()
-        eventout = gitevents[1]["type"] .. "\n" .. gitevents[1]["actor"]["login"]
+        eventout = "<b> Event: </b>" .. gitevents[1]["type"] .. "\n" ..
+          "<b> User: </b>"  .. gitevents[1]["actor"]["login"] .. "\n" ..
+          "<b> Repo: </b>"  .. gitevents[1]["repo"]["name"]
         return eventout
       end
   })
