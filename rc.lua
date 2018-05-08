@@ -192,6 +192,47 @@ os.execute("nm-applet &")
 -- }}
 
 -- {{--| GitAPI |---------------------------
+gituser = nil ---insert git user here
+mygiticon = wibox.widget {
+  resize = true,
+  widget = wibox.widget.imagebox
+}
+mygiticon.image = beautiful.icons_git
+
+if (pcall(function() require("cURL") require("JSON") end) and gituser~=nil) then
+  local cURL = require("cURL")
+  local json = require("JSON")
+  c = cURL.easy
+  {
+    url        = "https://api.github.com/users/" .. gituser .. "/events",
+    httpheader = { "User-Agent: "..gituser;};
+    writefunction = io.stderr
+  }
+  t={}
+  c:setopt_writefunction(table.insert, t)
+  c:perform()
+  c:close()
+  gitevents = table.concat(t)
+  gitevents = json:decode(gitevents)
+
+  awful.tooltip({
+      objects = { mygiticon },
+      timer_function = function()
+        eventout = "<b> Event: </b>" .. gitevents[1]["type"] .. "\n" ..
+          "<b> User: </b>"  .. gitevents[1]["actor"]["login"] .. "\n" ..
+          "<b> Repo: </b>"  .. gitevents[1]["repo"]["name"]
+        return eventout
+      end
+  })
+elseif gituser==nil then
+  naughty.notify({ preset = naughty.config.presets.critical,
+                   title = "curl require",
+                   text = "please set gituser" })
+else
+  naughty.notify({ preset = naughty.config.presets.critical,
+                   title = "curl require",
+                   text = "could not find curl or json lua package" })
+end
 -- }}
 
 -- Create a wibox for each screen and add it
