@@ -10,6 +10,7 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
+local xrandr = require("xrandr")
 
 -- Load Debian menu entries
 require("debian.menu")
@@ -191,45 +192,6 @@ os.execute("nm-applet &")
 -- }}
 
 -- {{--| GitAPI |---------------------------
-gituser = nil ---insert git user here
-mygiticon = wibox.widget {
-  resize = true,
-  widget = wibox.widget.imagebox
-}
-mygiticon.image = beautiful.icons_git
-
-if (pcall(function() require("cURL") require("JSON") end) and gituser~=nil) then
-  local cURL = require("cURL")
-  local json = require("JSON")
-  c = cURL.easy
-  {
-    url        = "https://api.github.com/users/" .. gituser .. "/events",
-    httpheader = { "User-Agent: "..gituser;};
-    writefunction = io.stderr
-  }
-  t={}
-  c:setopt_writefunction(table.insert, t)
-  c:perform()
-  c:close()
-  gitevents = table.concat(t)
-  gitevents = json:decode(gitevents)
-
-  awful.tooltip({
-      objects = { mygiticon },
-      timer_function = function()
-        eventout = gitevents[1]["type"] .. "\n" .. gitevents[1]["actor"]["login"]
-        return eventout
-      end
-  })
-elseif gituser==nil then
-  naughty.notify({ preset = naughty.config.presets.critical,
-                   title = "curl require",
-                   text = "please set gituser" })
-else
-  naughty.notify({ preset = naughty.config.presets.critical,
-                   title = "curl require",
-                   text = "could not find curl or json lua package" })
-end
 -- }}
 
 -- Create a wibox for each screen and add it
@@ -455,7 +417,10 @@ globalkeys = awful.util.table.join(
 		awful.key({}, "XF86AudioMute", function () awful.spawn("amixer -D pulse set Master +1 toggle") end, {description = "mute volume", group = "custom"}),
 
     -- Screensaver
-    awful.key({ modkey }, "Delete", function () awful.util.spawn("xscreensaver-command -lock") end)
+    awful.key({ modkey }, "Delete", function () awful.util.spawn("xscreensaver-command -lock") end),
+
+    -- Muliple Screens 
+    awful.key({ modkey, "Shift"}, "s", function() xrandr.xrandr() end)
 )
 
 clientkeys = awful.util.table.join(
